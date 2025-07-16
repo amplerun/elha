@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import API from '../../api/axios'; // Import the central API client
+
+const getErrorMessage = (error) => {
+    return error.response?.data?.message || error.message || error.toString();
+};
 
 const initialState = { 
     order: null, 
@@ -9,36 +13,30 @@ const initialState = {
     success: false 
 };
 
-export const createOrder = createAsyncThunk('order/create', async (order, { getState, rejectWithValue }) => {
+export const createOrder = createAsyncThunk('order/create', async (order, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.post('/api/orders', order, config);
+        const { data } = await API.post('/api/orders', order);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const getOrderDetails = createAsyncThunk('order/details', async (id, { getState, rejectWithValue }) => {
+export const getOrderDetails = createAsyncThunk('order/details', async (id, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get(`/api/orders/${id}`, config);
+        const { data } = await API.get(`/api/orders/${id}`);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const getMyOrders = createAsyncThunk('order/myOrders', async (_, { getState, rejectWithValue }) => {
+export const getMyOrders = createAsyncThunk('order/myOrders', async (_, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get(`/api/orders/myorders`, config);
+        const { data } = await API.get(`/api/orders/myorders`);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
@@ -49,6 +47,7 @@ const orderSlice = createSlice({
         resetOrder: (state) => {
             state.success = false;
             state.error = null;
+            state.loading = false;
         }
     },
     extraReducers: (builder) => {

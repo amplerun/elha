@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import API from '../../api/axios'; // Import the central API client
+
+const getErrorMessage = (error) => {
+    return error.response?.data?.message || error.message || error.toString();
+};
 
 const initialState = {
     users: [],
@@ -10,47 +14,39 @@ const initialState = {
 };
 
 // Async thunks for admin actions
-export const listUsers = createAsyncThunk('admin/listUsers', async (_, { getState, rejectWithValue }) => {
+export const listUsers = createAsyncThunk('admin/listUsers', async (_, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get('/api/users', config);
+        const { data } = await API.get('/api/users');
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const listOrders = createAsyncThunk('admin/listOrders', async (_, { getState, rejectWithValue }) => {
+export const listOrders = createAsyncThunk('admin/listOrders', async (_, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get('/api/orders', config);
+        const { data } = await API.get('/api/orders');
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const listStores = createAsyncThunk('admin/listStores', async (_, { getState, rejectWithValue }) => {
+export const listStores = createAsyncThunk('admin/listStores', async (_, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get('/api/stores/admin', config);
+        const { data } = await API.get('/api/stores/admin');
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const updateStoreStatus = createAsyncThunk('admin/updateStoreStatus', async ({ storeId, status }, { getState, rejectWithValue }) => {
+export const updateStoreStatus = createAsyncThunk('admin/updateStoreStatus', async ({ storeId, status }, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.put(`/api/stores/${storeId}/status`, { status }, config);
+        const { data } = await API.put(`/api/stores/${storeId}/status`, { status });
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 

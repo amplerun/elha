@@ -1,76 +1,98 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import API from '../../api/axios'; // Import the central API client
 
-const API_URL = '/api/users/';
+// Helper function to extract error messages
+const getErrorMessage = (error) => {
+    return error.response?.data?.message || error.message || error.toString();
+};
+
+// Get user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
 
 const initialState = {
   user: user ? user : null,
-  token: user ? user.token : null,
-  isError: false, isSuccess: false, isLoading: false, message: '',
+  isError: false,
+  isSuccess: false,
+  isLoading: false,
+  message: '',
 };
 
-export const register = createAsyncThunk('auth/register', async (user, thunkAPI) => {
-  try {
-    const response = await axios.post(API_URL, user);
-    if (response.data) localStorage.setItem('user', JSON.stringify(response.data));
-    return response.data;
-  } catch (error) {
-    const message = (error.response?.data?.message) || error.message;
-    return thunkAPI.rejectWithValue(message);
-  }
-});
-
-export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
-  try {
-    const response = await axios.post(API_URL + 'login', user);
-    if (response.data) localStorage.setItem('user', JSON.stringify(response.data));
-    return response.data;
-  } catch (error) {
-    const message = (error.response?.data?.message) || error.message;
-    return thunkAPI.rejectWithValue(message);
-  }
-});
-
-export const firebaseLogin = createAsyncThunk('auth/firebaseLogin', async (firebaseToken, thunkAPI) => {
+// Register user
+export const register = createAsyncThunk('auth/register', async (userData, { rejectWithValue }) => {
     try {
-        const response = await axios.post(API_URL + 'firebase-auth', { firebaseToken });
-        if(response.data) localStorage.setItem('user', JSON.stringify(response.data));
-        return response.data;
+        const { data } = await API.post('/api/users', userData);
+        if (data) localStorage.setItem('user', JSON.stringify(data));
+        return data;
     } catch (error) {
-        const message = (error.response?.data?.message) || error.message;
-        return thunkAPI.rejectWithValue(message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
+// Login user
+export const login = createAsyncThunk('auth/login', async (userData, { rejectWithValue }) => {
+    try {
+        const { data } = await API.post('/api/users/login', userData);
+        if (data) localStorage.setItem('user', JSON.stringify(data));
+        return data;
+    } catch (error) {
+        return rejectWithValue(getErrorMessage(error));
+    }
+});
+
+// Firebase Login Bridge
+export const firebaseLogin = createAsyncThunk('auth/firebaseLogin', async (firebaseToken, { rejectWithValue }) => {
+    try {
+        const { data } = await API.post('/api/users/firebase-auth', { firebaseToken });
+        if (data) localStorage.setItem('user', JSON.stringify(data));
+        return data;
+    } catch (error) {
+        return rejectWithValue(getErrorMessage(error));
+    }
+});
+
+// Logout user
 export const logout = createAsyncThunk('auth/logout', async () => {
-  localStorage.removeItem('user');
+    localStorage.removeItem('user');
 });
 
 export const authSlice = createSlice({
-  name: 'auth', initialState,
+  name: 'auth',
+  initialState,
   reducers: {
     reset: (state) => {
-      state.isLoading = false; state.isSuccess = false;
-      state.isError = false; state.message = '';
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = '';
     },
   },
   extraReducers: (builder) => {
     const handlePending = (state) => { state.isLoading = true; };
     const handleFulfilled = (state, action) => {
-        state.isLoading = false; state.isSuccess = true;
-        state.user = action.payload; state.token = action.payload.token;
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.user = action.payload;
     };
     const handleRejected = (state, action) => {
-        state.isLoading = false; state.isError = true;
-        state.message = action.payload; state.user = null; state.token = null;
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.user = null;
     };
     
     builder
-      .addCase(register.pending, handlePending).addCase(register.fulfilled, handleFulfilled).addCase(register.rejected, handleRejected)
-      .addCase(login.pending, handlePending).addCase(login.fulfilled, handleFulfilled).addCase(login.rejected, handleRejected)
-      .addCase(firebaseLogin.pending, handlePending).addCase(firebaseLogin.fulfilled, handleFulfilled).addCase(firebaseLogin.rejected, handleRejected)
-      .addCase(logout.fulfilled, (state) => { state.user = null; state.token = null; });
+      .addCase(register.pending, handlePending)
+      .addCase(register.fulfilled, handleFulfilled)
+      .addCase(register.rejected, handleRejected)
+      .addCase(login.pending, handlePending)
+      .addCase(login.fulfilled, handleFulfilled)
+      .addCase(login.rejected, handleRejected)
+      .addCase(firebaseLogin.pending, handlePending)
+      .addCase(firebaseLogin.fulfilled, handleFulfilled)
+      .addCase(firebaseLogin.rejected, handleRejected)
+      .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+      });
   },
 });
 

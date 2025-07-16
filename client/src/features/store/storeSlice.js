@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import API from '../../api/axios'; // Import the central API client
+
+const getErrorMessage = (error) => {
+    return error.response?.data?.message || error.message || error.toString();
+};
 
 const initialState = {
     myStore: null,
@@ -7,25 +11,21 @@ const initialState = {
     error: null,
 };
 
-export const getMyStore = createAsyncThunk('store/getMyStore', async (_, { getState, rejectWithValue }) => {
+export const getMyStore = createAsyncThunk('store/getMyStore', async (_, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.get('/api/stores/mystore', config);
+        const { data } = await API.get('/api/stores/mystore');
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const createOrUpdateStore = createAsyncThunk('store/createOrUpdate', async (storeData, { getState, rejectWithValue }) => {
+export const createOrUpdateStore = createAsyncThunk('store/createOrUpdate', async (storeData, { rejectWithValue }) => {
     try {
-        const { auth: { user } } = getState();
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data } = await axios.post('/api/stores', storeData, config);
+        const { data } = await API.post('/api/stores', storeData);
         return data;
     } catch (error) {
-        return rejectWithValue(error.response.data.message || error.message);
+        return rejectWithValue(getErrorMessage(error));
     }
 });
 

@@ -1,20 +1,25 @@
 import React, { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Added Link for better UI
+import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrder } from '../features/orders/orderSlice';
 import { clearCartItems } from '../features/cart/cartSlice';
 import Message from '../components/Message';
 
 function PlaceOrderPage() {
-    // --- ALL HOOKS MUST BE CALLED AT THE TOP LEVEL ---
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const cart = useSelector((state) => state.cart);
     const { order, success, error } = useSelector((state) => state.order);
 
-    // --- EFFECT HOOK IS CALLED UNCONDITIONALLY ---
+    // Redirect if shipping address is missing
     useEffect(() => {
-        // We put the conditional logic *inside* the effect
+        if (!cart.shippingAddress?.address) {
+            navigate('/shipping');
+        }
+    }, [cart.shippingAddress, navigate]);
+
+    // Redirect to order page on success
+    useEffect(() => {
         if (success && order) {
             navigate(`/order/${order._id}`);
             dispatch(clearCartItems());
@@ -22,18 +27,15 @@ function PlaceOrderPage() {
         }
     }, [navigate, success, order, dispatch]);
 
-    // --- CONDITIONAL RETURNS and RENDER LOGIC COME AFTER HOOKS ---
-    
-    // Guard clause for missing cart or shipping address
-    if (!cart.shippingAddress.address) {
-        navigate('/shipping');
-        return null; // Return null while redirecting
-    }
+    // Guard against empty cart
     if (!cart.cartItems || cart.cartItems.length === 0) {
-        return <Message>Your cart is empty. <Link to="/">Go Shopping</Link></Message>;
+        return (
+            <Message>
+                Your cart is empty. <Link to="/">Go Shopping</Link>
+            </Message>
+        );
     }
 
-    // Calculations can happen after the guard clauses
     const addDecimals = (num) => (Math.round(num * 100) / 100).toFixed(2);
     const itemsPrice = addDecimals(cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0));
     const shippingPrice = addDecimals(itemsPrice > 100 ? 0 : 10);
@@ -45,10 +47,10 @@ function PlaceOrderPage() {
             orderItems: cart.cartItems,
             shippingAddress: cart.shippingAddress,
             paymentMethod: cart.paymentMethod,
-            itemsPrice: itemsPrice,
-            shippingPrice: shippingPrice,
-            taxPrice: taxPrice,
-            totalPrice: totalPrice,
+            itemsPrice,
+            shippingPrice,
+            taxPrice,
+            totalPrice,
         }));
     };
 
@@ -59,14 +61,16 @@ function PlaceOrderPage() {
                 <div>
                     <div>
                         <h2>Shipping</h2>
-                        <p><strong>Address:</strong> {cart.shippingAddress.address}, {cart.shippingAddress.city}, {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}</p>
+                        <p>
+                            <strong>Address:</strong> {cart.shippingAddress.address}, {cart.shippingAddress.city}, {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
+                        </p>
                     </div>
-                    <hr/>
+                    <hr />
                     <div>
                         <h2>Payment Method</h2>
                         <p><strong>Method:</strong> {cart.paymentMethod}</p>
                     </div>
-                    <hr/>
+                    <hr />
                     <div>
                         <h2>Order Items</h2>
                         {cart.cartItems.map((item, index) => (
@@ -85,7 +89,12 @@ function PlaceOrderPage() {
                     <p><strong>Tax:</strong> ${taxPrice}</p>
                     <p><strong>Total:</strong> ${totalPrice}</p>
                     {error && <Message variant="danger">{error.message || error}</Message>}
-                    <button className="btn" style={{ width: '100%' }} onClick={placeOrderHandler} disabled={cart.cartItems.length === 0}>
+                    <button
+                        className="btn"
+                        style={{ width: '100%' }}
+                        onClick={placeOrderHandler}
+                        disabled={cart.cartItems.length === 0}
+                    >
                         Place Order
                     </button>
                 </div>
@@ -93,7 +102,5 @@ function PlaceOrderPage() {
         </div>
     );
 }
+
 export default PlaceOrderPage;
-// Final check for Rules of Hooks
-function PlaceOrderPage() {
-//...

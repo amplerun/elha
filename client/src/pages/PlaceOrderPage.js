@@ -94,3 +94,6 @@ function PlaceOrderPage() {
     );
 }
 export default PlaceOrderPage;
+// Final check for Rules of Hooks
+function PlaceOrderPage() {
+//...

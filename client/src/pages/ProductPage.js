@@ -13,7 +13,11 @@ function ProductPage() {
     const dispatch = useDispatch();
     const [qty, setQty] = useState(1);
     const { product, isLoading, isError, message } = useSelector((state) => state.products);
-
+    const addToCartHandler = () => {
+        // Pass the full product object and the selected quantity
+        dispatch(addToCart({ ...product, qty }));
+        navigate('/cart');
+    };
     useEffect(() => {
         dispatch(getProduct(productId));
         return () => { dispatch(reset()); };

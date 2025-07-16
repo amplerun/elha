@@ -17,20 +17,35 @@ const cartSlice = createSlice({
     initialState,
     reducers: {
         addToCart: (state, action) => {
-            const item = action.payload;
-            const existItem = state.cartItems.find((x) => x._id === item._id);
+            const itemToAdd = action.payload;
+
+            // --- THE CRITICAL FIX IS HERE ---
+            // Create a cart-specific item object from the full product object.
+            const cartItem = {
+                product: itemToAdd._id, // Keep original product ID
+                name: itemToAdd.name,
+                // Select the first image from the 'images' array.
+                image: itemToAdd.images[0], 
+                price: itemToAdd.price,
+                countInStock: itemToAdd.countInStock,
+                qty: itemToAdd.qty,
+            };
+            // --- END OF FIX ---
+
+            const existItem = state.cartItems.find((x) => x.product === cartItem.product);
 
             if (existItem) {
                 state.cartItems = state.cartItems.map((x) =>
-                    x._id === existItem._id ? item : x
+                    x.product === existItem.product ? cartItem : x
                 );
             } else {
-                state.cartItems = [...state.cartItems, item];
+                state.cartItems = [...state.cartItems, cartItem];
             }
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
         removeFromCart: (state, action) => {
-            state.cartItems = state.cartItems.filter((x) => x._id !== action.payload);
+            // The payload should be the product ID
+            state.cartItems = state.cartItems.filter((x) => x.product !== action.payload);
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
         saveShippingAddress: (state, action) => {

@@ -7,7 +7,8 @@ import Message from '../components/Message';
 
 function HomePage() {
   const dispatch = useDispatch();
-  const { products, isLoading, isError, message } = useSelector((state) => state.products);
+  // Provide a default empty array to prevent errors before data arrives
+  const { products = [], isLoading, isError, message } = useSelector((state) => state.products);
 
   useEffect(() => {
     dispatch(getProducts());
@@ -19,9 +20,14 @@ function HomePage() {
       <h1>Latest Products</h1>
       {isLoading ? <Loader /> : isError ? <Message variant="danger">{message}</Message> : (
         <div className="product-grid">
-          {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
+          {/* Add a check to ensure products is a valid array before mapping */}
+          {products && products.length > 0 ? (
+            products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))
+          ) : (
+            <p>No products found.</p>
+          )}
         </div>
       )}
     </div>

@@ -7,7 +7,8 @@ import Message from '../components/Message';
 
 function ProfilePage() {
     const dispatch = useDispatch();
-    const { myOrders, loading, error } = useSelector((state) => state.order);
+    // Provide a default empty array
+    const { myOrders = [], loading, error } = useSelector((state) => state.order);
 
     useEffect(() => {
         dispatch(getMyOrders());
@@ -22,16 +23,23 @@ function ProfilePage() {
                         <tr><th>ID</th><th>DATE</th><th>TOTAL</th><th>PAID</th><th>DELIVERED</th><th></th></tr>
                     </thead>
                     <tbody>
-                        {myOrders.map(order => (
-                            <tr key={order._id}>
-                                <td>{order._id}</td>
-                                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                <td>${order.totalPrice}</td>
-                                <td>{order.isPaid ? 'Yes' : 'No'}</td>
-                                <td>{order.isDelivered ? 'Yes' : 'No'}</td>
-                                <td><Link to={`/order/${order._id}`} className="btn btn-sm btn-light">Details</Link></td>
+                        {/* Add a check before mapping */}
+                        {myOrders && myOrders.length > 0 ? (
+                            myOrders.map(order => (
+                                <tr key={order._id}>
+                                    <td>{order._id}</td>
+                                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td>${order.totalPrice}</td>
+                                    <td>{order.isPaid ? 'Yes' : 'No'}</td>
+                                    <td>{order.isDelivered ? 'Yes' : 'No'}</td>
+                                    <td><Link to={`/order/${order._id}`} className="btn btn-sm btn-light">Details</Link></td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="6" style={{textAlign: 'center'}}>You have no orders.</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             )}

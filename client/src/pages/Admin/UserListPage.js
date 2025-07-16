@@ -6,7 +6,8 @@ import Message from '../../components/Message';
 
 function UserListPage() {
     const dispatch = useDispatch();
-    const { users, loading, error } = useSelector((state) => state.admin);
+    // Provide a default empty array
+    const { users = [], loading, error } = useSelector((state) => state.admin);
 
     useEffect(() => {
         dispatch(listUsers());
@@ -21,14 +22,21 @@ function UserListPage() {
                         <tr><th>ID</th><th>NAME</th><th>EMAIL</th><th>ROLE</th></tr>
                     </thead>
                     <tbody>
-                        {users.map(user => (
-                            <tr key={user._id}>
-                                <td>{user._id}</td>
-                                <td>{user.name}</td>
-                                <td><a href={`mailto:${user.email}`}>{user.email}</a></td>
-                                <td>{user.role}</td>
+                        {/* Add a check before mapping */}
+                        {users && users.length > 0 ? (
+                            users.map(user => (
+                                <tr key={user._id}>
+                                    <td>{user._id}</td>
+                                    <td>{user.name}</td>
+                                    <td><a href={`mailto:${user.email}`}>{user.email}</a></td>
+                                    <td>{user.role}</td>
+                                </tr>
+                            ))
+                        ) : (
+                             <tr>
+                                <td colSpan="4" style={{ textAlign: 'center' }}>No users found.</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             )}

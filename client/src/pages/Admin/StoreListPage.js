@@ -6,7 +6,7 @@ import Message from '../../components/Message';
 
 function StoreListPage() {
     const dispatch = useDispatch();
-    const { stores, loading, error } = useSelector((state) => state.admin);
+    const { stores = [], loading, error } = useSelector((state) => state.admin);
 
     useEffect(() => {
         dispatch(listStores());
@@ -27,22 +27,28 @@ function StoreListPage() {
                         <tr><th>ID</th><th>NAME</th><th>OWNER</th><th>STATUS</th><th>ACTIONS</th></tr>
                     </thead>
                     <tbody>
-                        {stores.map(store => (
-                            <tr key={store._id}>
-                                <td>{store._id}</td>
-                                <td>{store.name}</td>
-                                <td>{store.owner.name}</td>
-                                <td>{store.status}</td>
-                                <td>
-                                    {store.status === 'pending' && (
-                                        <>
-                                            <button className="btn btn-sm" onClick={() => handleStatusUpdate(store._id, 'approved')}>Approve</button>
-                                            <button className="btn btn-sm btn-danger" onClick={() => handleStatusUpdate(store._id, 'rejected')}>Reject</button>
-                                        </>
-                                    )}
-                                </td>
+                        {stores && stores.length > 0 ? (
+                            stores.map(store => (
+                                <tr key={store._id}>
+                                    <td>{store._id}</td>
+                                    <td>{store.name}</td>
+                                    <td>{store.owner && store.owner.name}</td>
+                                    <td>{store.status}</td>
+                                    <td>
+                                        {store.status === 'pending' && (
+                                            <>
+                                                <button className="btn btn-sm" onClick={() => handleStatusUpdate(store._id, 'approved')}>Approve</button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => handleStatusUpdate(store._id, 'rejected')}>Reject</button>
+                                            </>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                             <tr>
+                                <td colSpan="5" style={{ textAlign: 'center' }}>No stores found.</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             )}

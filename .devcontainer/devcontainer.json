@@ -1,0 +1,33 @@
+{
+	"name": "MERN E-commerce Platform",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+	// Forward ports from the Docker Compose services
+	"forwardPorts": [5000, 3000],
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"mongodb.mongodb-vscode"
+			]
+		}
+	},
+
+	"portsAttributes": {
+		"5000": {
+			"label": "API Server"
+		},
+		"3000": {
+			"label": "React App",
+			"onAutoForward": "openBrowser"
+		}
+	},
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "bash .devcontainer/setup.sh"
+}

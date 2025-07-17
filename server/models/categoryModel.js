@@ -7,11 +7,11 @@ const categorySchema = new mongoose.Schema({
         trim: true,
         unique: true,
     },
-    // This field enables multi-level categories
+    // This field enables multi-level categories, referencing itself.
     parent: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
-        default: null,
+        default: null, // A null parent means it's a top-level category
     },
 }, { timestamps: true });
 

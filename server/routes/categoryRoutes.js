@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.route('/')
     .post(protect, admin, createCategory)
-    .get(getCategories); // Public can view categories
+    .get(getCategories);
 
 router.route('/:id')
     .put(protect, admin, updateCategory)

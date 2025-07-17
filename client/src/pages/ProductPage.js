@@ -7,21 +7,20 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 
 function ProductPage() {
-    // --- HOOKS INITIALIZATION (TOP LEVEL) ---
+    // --- HOOKS INITIALIZATION ---
     const { id: productId } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [qty, setQty] = useState(1);
 
+    // Pull only the necessary state from Redux
     const { product, isLoading, isError, message } = useSelector((state) => state.products);
-    const { user } = useSelector(state => state.auth); // To potentially add features like "Chat with Seller"
+    // The 'user' variable has been removed as it was unused in this component.
+    // const { user } = useSelector(state => state.auth); // <-- THIS LINE IS REMOVED
 
     // --- DATA FETCHING EFFECT ---
     useEffect(() => {
-        // Fetch product details when the component mounts or productId changes
         dispatch(getProduct(productId));
-
-        // Cleanup function to reset the product state when the component unmounts
         return () => {
             dispatch(reset());
         };
@@ -29,36 +28,30 @@ function ProductPage() {
 
     // --- EVENT HANDLERS ---
     const addToCartHandler = () => {
-        // Dispatch the addToCart action with the full product object and selected quantity
         dispatch(addToCart({ ...product, qty }));
-        // Navigate the user to their cart page for immediate feedback
         navigate('/cart');
     };
 
     // --- RENDER LOGIC ---
     return (
-        <div>
+        <div style={{ padding: '1rem' }}>
             <Link className="btn btn-light" to='/' style={{ marginBottom: '2rem', display: 'inline-block' }}>
                 Go Back
             </Link>
 
-            {/* Conditional Rendering Logic */}
             {isLoading ? (
                 <Loader />
             ) : isError ? (
                 <Message variant="danger">{message || 'Product not found.'}</Message>
-            ) : product ? ( // Only render if the product object exists
+            ) : product ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                     
-                    {/* Left Column: Product Image */}
                     <div>
-                        {/* Ensure images array exists before accessing its first element */}
                         {product.images && product.images.length > 0 && (
                             <img src={product.images[0]} alt={product.name} style={{ width: '100%', borderRadius: '5px' }} />
                         )}
                     </div>
                     
-                    {/* Right Column: Product Details and Actions */}
                     <div>
                         <h3>{product.name}</h3>
                         <hr/>
@@ -76,7 +69,6 @@ function ProductPage() {
                         </p>
                         <hr/>
 
-                        {/* Quantity Selector and Add to Cart button only show if product is in stock */}
                         {product.countInStock > 0 && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '5px' }}>
                                 <div className="form-group" style={{ marginBottom: 0 }}>
@@ -100,7 +92,6 @@ function ProductPage() {
                     </div>
                 </div>
             ) : (
-                // Fallback message if product is null after loading and no error
                 <Message>Product not found.</Message>
             )}
         </div>

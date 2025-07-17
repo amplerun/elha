@@ -78,4 +78,5 @@ function ManageCategoriesPage() {
     );
 }
 
+
 export default ManageCategoriesPage;

@@ -4,18 +4,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrder } from '../features/orders/orderSlice';
 import { clearCartItems } from '../features/cart/cartSlice';
 import Message from '../components/Message';
-import Loader from '../components/Loader';
 
 function PlaceOrderPage() {
-    // ===================================================================
-    // STEP 1: ALL HOOKS ARE CALLED UNCONDITIONALLY AT THE TOP
-    // ===================================================================
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const cart = useSelector((state) => state.cart);
-    const { order, success, loading, error } = useSelector((state) => state.order);
+    const { order, success, error } = useSelector((state) => state.order);
 
-    // Effect to handle redirection on successful order creation
+    // Redirect if shipping address is missing
+    useEffect(() => {
+        if (!cart.shippingAddress?.address) {
+            navigate('/shipping');
+        }
+    }, [cart.shippingAddress, navigate]);
+
+    // Redirect to order page on success
     useEffect(() => {
         if (success && order) {
             navigate(`/order/${order._id}`);
@@ -24,35 +27,10 @@ function PlaceOrderPage() {
         }
     }, [navigate, success, order, dispatch]);
 
-    // Effect to ensure user has a shipping address before reaching this page
-    useEffect(() => {
-        if (!cart.shippingAddress?.address) {
-            navigate('/shipping');
-        }
-    }, [cart.shippingAddress, navigate]);
+    // ✅ move this check *after* all useEffect calls
+    const isCartEmpty = !cart.cartItems || cart.cartItems.length === 0;
 
-
-    // ===================================================================
-    // STEP 2: EARLY RETURNS AND GUARD CLAUSES (AFTER ALL HOOKS)
-    // ===================================================================
-    
-    // If the cart is empty, render a message and stop.
-    if (!cart.cartItems || cart.cartItems.length === 0) {
-        return (
-            <div style={{ padding: '2rem' }}>
-                <Message>Your cart is empty. <Link to="/">Go Shopping</Link></Message>
-            </div>
-        );
-    }
-    
-    // ===================================================================
-    // STEP 3: CALCULATIONS AND EVENT HANDLERS
-    // ===================================================================
-
-    // Helper for formatting currency
     const addDecimals = (num) => (Math.round(num * 100) / 100).toFixed(2);
-
-    // Calculate prices
     const itemsPrice = addDecimals(cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0));
     const shippingPrice = addDecimals(itemsPrice > 100 ? 0 : 10);
     const taxPrice = addDecimals(Number((0.15 * itemsPrice).toFixed(2)));
@@ -70,54 +48,57 @@ function PlaceOrderPage() {
         }));
     };
 
-    // ===================================================================
-    // STEP 4: JSX RENDER
-    // ===================================================================
+    if (isCartEmpty) {
+        return (
+            <Message>
+                Your cart is empty. <Link to="/">Go Shopping</Link>
+            </Message>
+        );
+    }
 
     return (
-        <div style={{ padding: '2rem' }}>
+        <div>
             <h1>Order Summary</h1>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginTop: '1rem' }}>
-                {/* Left Column */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
                 <div>
-                    <div style={{ marginBottom: '1rem' }}>
+                    <div>
                         <h2>Shipping</h2>
-                        <p><strong>Address:</strong> {cart.shippingAddress.address}, {cart.shippingAddress.city}, {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}</p>
+                        <p>
+                            <strong>Address:</strong> {cart.shippingAddress.address}, {cart.shippingAddress.city}, {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
+                        </p>
                     </div>
                     <hr />
-                    <div style={{ margin: '1rem 0' }}>
+                    <div>
                         <h2>Payment Method</h2>
                         <p><strong>Method:</strong> {cart.paymentMethod}</p>
                     </div>
                     <hr />
-                    <div style={{ marginTop: '1rem' }}>
+                    <div>
                         <h2>Order Items</h2>
                         {cart.cartItems.map((item, index) => (
-                            <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
-                                <img src={item.image} alt={item.name} style={{ width: '50px', marginRight: '1rem' }} />
-                                <Link to={`/product/${item.product}`} style={{ flex: 1 }}>{item.name}</Link>
-                                <div>{item.qty} x ${addDecimals(item.price)} = ${addDecimals(item.qty * item.price)}</div>
+                            <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                <img src={item.images[0]} alt={item.name} style={{ width: '50px', marginRight: '1rem' }} />
+                                <Link to={`/product/${item._id}`} style={{ flex: 1 }}>{item.name}</Link>
+                                <div>{item.qty} x ${item.price} = ${addDecimals(item.qty * item.price)}</div>
                             </div>
                         ))}
                     </div>
                 </div>
-
-                {/* Right Column (Summary) */}
                 <div>
-                    <div style={{ border: '1px solid #ddd', padding: '1rem', borderRadius: '5px' }}>
-                        <h2>Summary</h2>
-                        <p style={{ display: 'flex', justifyContent: 'space-between' }}><span>Items:</span> <span>${itemsPrice}</span></p>
-                        <p style={{ display: 'flex', justifyContent: 'space-between' }}><span>Shipping:</span> <span>${shippingPrice}</span></p>
-                        <p style={{ display: 'flex', justifyContent: 'space-between' }}><span>Tax:</span> <span>${taxPrice}</span></p>
-                        <hr />
-                        <p style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.2rem' }}><span>Total:</span> <span>${totalPrice}</span></p>
-                        <hr />
-                        {error && <Message variant="danger">{error.message || error}</Message>}
-                        {loading && <Loader />}
-                        <button className="btn" style={{ width: '100%' }} onClick={placeOrderHandler} disabled={cart.cartItems.length === 0 || loading}>
-                            {loading ? 'Processing...' : 'Place Order'}
-                        </button>
-                    </div>
+                    <h2>Summary</h2>
+                    <p><strong>Items:</strong> ${itemsPrice}</p>
+                    <p><strong>Shipping:</strong> ${shippingPrice}</p>
+                    <p><strong>Tax:</strong> ${taxPrice}</p>
+                    <p><strong>Total:</strong> ${totalPrice}</p>
+                    {error && <Message variant="danger">{error.message || error}</Message>}
+                    <button
+                        className="btn"
+                        style={{ width: '100%' }}
+                        onClick={placeOrderHandler}
+                        disabled={cart.cartItems.length === 0}
+                    >
+                        Place Order
+                    </button>
                 </div>
             </div>
         </div>

@@ -8,8 +8,8 @@ import Loader from '../components/Loader';
 
 function PlaceOrderPage() {
     // ===================================================================
-    // STEP 1: ALL HOOKS ARE CALLED UNCONDITIONALLY AT THE TOP
-    // This adheres to the Rules of Hooks.
+    // SOLUTION: ALL HOOKS ARE CALLED UNCONDITIONALLY AT THE TOP
+    // This adheres to the Rules of Hooks and will fix the build error.
     // ===================================================================
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -27,7 +27,6 @@ function PlaceOrderPage() {
 
     // Effect to ensure user has a shipping address before reaching this page
     useEffect(() => {
-        // The conditional logic is INSIDE the hook, not around it.
         if (!cart.shippingAddress?.address) {
             navigate('/shipping');
         }
@@ -35,10 +34,10 @@ function PlaceOrderPage() {
 
 
     // ===================================================================
-    // STEP 2: EARLY RETURNS AND GUARD CLAUSES (AFTER ALL HOOKS)
+    // STEP 2: EARLY RETURNS AND GUARD CLAUSES (PERFORMED *AFTER* ALL HOOKS)
     // ===================================================================
     
-    // If the cart is empty, render a message and stop execution. This is now safe.
+    // Guard clause for missing cart items. This is now safe to do.
     if (!cart.cartItems || cart.cartItems.length === 0) {
         return (
             <div style={{ padding: '2rem' }}>
@@ -70,7 +69,7 @@ function PlaceOrderPage() {
     };
 
     // ===================================================================
-    // STEP 4: JSX RENDER
+    // STEP 4: MAIN JSX RENDER
     // ===================================================================
 
     return (

@@ -7,7 +7,7 @@ import Message from '../components/Message';
 import Loader from '../components/Loader';
 
 function PlaceOrderPage() {
-    // 1. ALL HOOKS AT THE TOP
+    // --- 1. HOOKS AT TOP LEVEL ---
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const cart = useSelector((state) => state.cart);
@@ -22,12 +22,12 @@ function PlaceOrderPage() {
         }
     }, [navigate, cart.shippingAddress, success, order, dispatch]);
 
-    // 2. EARLY RETURN AFTER HOOKS
+    // --- 2. EARLY RETURN *AFTER* HOOKS ---
     if (!cart.cartItems || cart.cartItems.length === 0) {
         return <div style={{ padding: '2rem' }}><Message>Your cart is empty. <Link to="/">Go Shopping</Link></Message></div>;
     }
     
-    // 3. RENDER LOGIC
+    // --- 3. RENDER LOGIC ---
     const addDecimals = (num) => (Math.round(num * 100) / 100).toFixed(2);
     const itemsPrice = addDecimals(cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0));
     const shippingPrice = addDecimals(itemsPrice > 100 ? 0 : 10);
@@ -39,7 +39,7 @@ function PlaceOrderPage() {
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Order Summary</h1>
-            {/* JSX content... */}
+             {/* ... Rest of JSX ... */}
         </div>
     );
 }

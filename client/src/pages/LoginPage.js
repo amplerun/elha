@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { login, firebaseLogin, reset } from '../features/auth/authSlice';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
@@ -8,22 +8,30 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 
 function LoginPage() {
+    // --- 1. HOOKS AT TOP LEVEL ---
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const location = useLocation();
-
     const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
+
     const redirect = location.search ? location.search.split('=')[1] : '/';
 
     useEffect(() => {
         if (isSuccess || user) {
             navigate(redirect);
         }
+        // No need to reset on unmount, as we want error messages to persist briefly
+    }, [user, isSuccess, navigate, redirect]);
+    
+    // Cleanup effect specifically for unmounting
+    useEffect(() => {
         return () => { dispatch(reset()); };
-    }, [user, isSuccess, navigate, redirect, dispatch]);
+    }, [dispatch]);
 
+
+    // --- 2. LOGIC AND RENDER ---
     const fullUiConfig = { ...uiConfig, callbacks: {
         signInSuccessWithAuthResult: function(authResult) {
             authResult.user.getIdToken().then(idToken => dispatch(firebaseLogin(idToken)));
@@ -52,6 +60,7 @@ function LoginPage() {
                 </div>
                 <button type="submit" className="btn">Sign In</button>
             </form>
+            <p style={{marginTop: '1rem'}}>New Customer? <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>Register</Link></p>
             <hr style={{margin: '20px 0'}} />
             <StyledFirebaseAuth uiConfig={fullUiConfig} firebaseAuth={auth} />
         </div>

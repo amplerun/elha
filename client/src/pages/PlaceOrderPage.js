@@ -8,8 +8,7 @@ import Loader from '../components/Loader';
 
 function PlaceOrderPage() {
     // ===================================================================
-    // SOLUTION: ALL HOOKS ARE CALLED UNCONDITIONALLY AT THE TOP
-    // This adheres to the Rules of Hooks and will fix the build error.
+    // STEP 1: ALL HOOKS ARE AT THE VERY TOP, AS PER YOUR SOLUTION
     // ===================================================================
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -20,12 +19,13 @@ function PlaceOrderPage() {
     useEffect(() => {
         if (success && order) {
             navigate(`/order/${order._id}`);
+            // Cleanup is dispatched inside the effect that causes the navigation
             dispatch(clearCartItems());
             dispatch(resetOrder());
         }
     }, [navigate, success, order, dispatch]);
 
-    // Effect to ensure user has a shipping address before reaching this page
+    // Effect to handle redirection if required data is missing
     useEffect(() => {
         if (!cart.shippingAddress?.address) {
             navigate('/shipping');
@@ -34,10 +34,10 @@ function PlaceOrderPage() {
 
 
     // ===================================================================
-    // STEP 2: EARLY RETURNS AND GUARD CLAUSES (PERFORMED *AFTER* ALL HOOKS)
+    // STEP 2: CONDITIONAL LOGIC AND EARLY RETURNS *AFTER* ALL HOOKS
     // ===================================================================
     
-    // Guard clause for missing cart items. This is now safe to do.
+    // Guard clause for missing cart items. This is now safe.
     if (!cart.cartItems || cart.cartItems.length === 0) {
         return (
             <div style={{ padding: '2rem' }}>

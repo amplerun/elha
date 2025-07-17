@@ -14,25 +14,25 @@ import OrderPage from './pages/OrderPage';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Admin Imports
+// --- START CORRECTION BLOCK ---
+// Corrected paths for all Admin and Seller pages
 import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import UserListPage from './pages/Admin/UserListPage';
 import OrderListPage from './pages/Admin/OrderListPage';
 import StoreListPage from './pages/Admin/StoreListPage';
-import ManageCategoriesPage from './pages/Admin/ManageCategoriesPage';
+import ManageCategoriesPage from './pages/Admin/ManageCategoriesPage'; // This path must be exact
 
-// Seller Imports
 import SellerDashboard from './pages/Seller/SellerDashboard';
 import ProductListPage from './pages/Seller/ProductListPage';
 import ProductCreatePage from './pages/Seller/ProductCreatePage';
+// --- END CORRECTION BLOCK ---
 
 function App() {
   return (
     <>
       <Header />
-      {/* Main content area */}
-      <main style={{ minHeight: '80vh' }}>
+      <main style={{ minHeight: '80vh', padding: '0' }}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
@@ -58,7 +58,7 @@ function App() {
             <Route path="/seller/product/:id/edit" element={<ProductCreatePage />} />
           </Route>
 
-          {/* Admin Routes using the new AdminLayout */}
+          {/* Admin Routes with dedicated layout */}
           <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminLayout /></ProtectedRoute>}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="sellers" element={<UserListPage />} />
